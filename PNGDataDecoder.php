@@ -12,11 +12,11 @@ class PNGDataDecoder
                && $info['height'] > 0 && $info['width'] > 0
                && $info['color'] & (1 << 2) ? !is_null($plte) : true);
 
-        // color type2, 8bit$B$N>l9g(B        
+        // color type2, 8bitの場合        
         if ($info['color'] === 2 && $info['bit'] === 8) {
             return $this->decodeWith8bitRGB($ba, $info);
         }
-        else throw new PNGDecodeException('$BBP1~$7$F$$$^$;$s(B');
+        else throw new PNGDecodeException('このビット深度とカラータイプに組み合わせには対応していません');
     }
     protected function decodeWith8bitRGB(ByteArray $ba, Array $info)
     {           
@@ -81,7 +81,7 @@ class PNGDataDecoder
                     $i++;
                 }
                 break;
-            default: throw new PNGDecodeException('$BL$CN$N%U%#%k%?$G$9!#(B');
+            default: throw new PNGDecodeException('未知のフィルタです。');
                 
             }
         }
