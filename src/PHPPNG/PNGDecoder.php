@@ -1,6 +1,8 @@
 <?php
 namespace PHPPNG;
 
+use Exception;
+
 class PNGDecoder
 {
     protected function readHeader(&$h)
