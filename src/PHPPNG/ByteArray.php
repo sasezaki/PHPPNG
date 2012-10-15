@@ -1,34 +1,42 @@
 <?php
+namespace PHPPNG;
+
+use ArrayAccess;
+use IteratorAggregate;
+use Countable;
+use ArrayIterator;
+use Exception;
 
 class ByteArray implements ArrayAccess, IteratorAggregate, Countable
 {
     protected $arr;
-    function __construct($bin = "")
+    public function __construct($bin = "")
     {
         assert(is_string($bin));
         $this->arr = array_values(unpack('C*', $bin));
     }
-    function getArray()
+    public function getArray()
     {
         return $this->arr;
     }
-    function writeByte($byte)
+    public function writeByte($byte)
     {
         assert($byte >= 0 && $byte < 256);
         $this->arr[] = $byte;
     }
-    function slice($start, $offset)
+    public function slice($start, $offset)
     {
         return self::create(array_slice($this->arr, $start, $offset));
     }
-    static protected function create(Array $bytearr)
+    protected static function create(Array $bytearr)
     {
         $obj = new self();
         $obj->arr = $bytearr;
+
         return $obj;
     }
-    
-    function writeBytes($num, $bytenum)
+
+    public function writeBytes($num, $bytenum)
     {
         assert($num >= 0);
         $buf = array();
@@ -40,41 +48,40 @@ class ByteArray implements ArrayAccess, IteratorAggregate, Countable
             $this->arr[] = $byte;
         }
     }
-    function writeLong($long)
+    public function writeLong($long)
     {
         $this->writeBytes($long, 4);
     }
-    function writeShort($short)
+    public function writeShort($short)
     {
         $this->writeBYtes($short, 2);
     }
 
-    function offsetGet($i)
+    public function offsetGet($i)
     {
         return $this->arr[$i];
     }
-    function offsetSet($i, $val)
+    public function offsetSet($i, $val)
     {
         $this->arr[$i] = $val;
     }
-    function offsetExists($i)
+    public function offsetExists($i)
     {
         assert(is_int($i));
+
         return isset($this->arr[$i]);
     }
-    function offsetUnset($i)
+    public function offsetUnset($i)
     {
         throw new Exception('not implemented');
     }
-    function getIterator()
+    public function getIterator()
     {
         return new ArrayIterator($this->arr);
     }
-    function count()
+    public function count()
     {
         return count($this->arr);
     }
-    
+
 }
-
-

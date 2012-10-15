@@ -1,26 +1,24 @@
 <?php
-include_once dirname(__FILE__) . '/PNGDecodeException.php';
-include_once dirname(__FILE__) . '/ByteArray.php';
-include_once dirname(__FILE__) . '/PNG8bitRGBImage.php';
+namespace PHPPNG;
 
 class PNGDataDecoder
 {
-    function decode(ByteArray $ba, Array $info, Array $plte = null)
+    public function decode(ByteArray $ba, Array $info, Array $plte = null)
     {
         assert(isset($info['height'], $info['width'], $info['bit'],
                      $info['color'], $info['filter'], $info['interlace'])
                && $info['height'] > 0 && $info['width'] > 0
                && $info['color'] & (1 << 2) ? !is_null($plte) : true);
 
-        // color type2, 8bitの場合        
+        // color type2, 8bitの場合
         if ($info['color'] === 2 && $info['bit'] === 8) {
             return $this->decodeWith8bitRGB($ba, $info);
-        }
-        else throw new PNGDecodeException('このビット深度とカラータイプに組み合わせには対応していません');
+        } else throw new PNGDecodeException('このビット深度とカラータイプに組み合わせには対応していません');
     }
     protected function decodeWith8bitRGB(ByteArray $ba, Array $info)
-    {           
+    {
         $this->unfilter($ba, $info['width'], $info['height'], 3);
+
         return new PNG8bitRGBImage($ba, $info['width'], $info['height']);
     }
     protected function unfilter(ByteArray $ba, $width, $height, $bpp)
@@ -44,7 +42,7 @@ class PNGDataDecoder
                 break;
             case 2:
                 for ($x = 0; $x < $width * $bpp; $x++) {
-                    if($y > 0) {
+                    if ($y > 0) {
                         $ba->offsetSet($i,
                                        ($ba->offsetGet($i) +
                                         $ba->offsetGet($i - $width * $bpp - 1))
@@ -82,11 +80,11 @@ class PNGDataDecoder
                 }
                 break;
             default: throw new PNGDecodeException('未知のフィルタです。');
-                
+
             }
         }
     }
-    
+
     protected function paethPredictor($a, $b, $c)
     {
         $p = $a + $b - $c;

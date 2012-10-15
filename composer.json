@@ -1,0 +1,20 @@
+{
+    "name": "sasezaki/phppng",
+    "description": "PNG Library",
+    "minimum-stability": "dev",
+    "license":"MIT",
+    "authors": [
+        {
+            "name": "sasezaki",
+            "email": "sasezaki@gmail.com"
+        }
+    ],
+    "require": {
+
+    },
+    "autoload": {
+        "psr-0": {
+            "PHPPNG":"src/"
+        }
+    }
+}

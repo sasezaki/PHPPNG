@@ -1,7 +1,5 @@
 <?php
-include_once dirname(__FILE__) . '/ByteArray.php';
-include_once dirname(__FILE__) . '/PNGDecodeException.php';
-include_once dirname(__FILE__) . '/PNGDataDecoder.php';
+namespace PHPPNG;
 
 class PNGDecoder
 {
@@ -18,10 +16,11 @@ class PNGDecoder
         while (filesize($path) > ftell($f))
             $chunks[] = $this->readChunk($f);
         fclose($f);
-        return $chunks;      
+
+        return $chunks;
     }
 
-    function decode($path)
+    public function decode($path)
     {
         if (!file_exists($path)) throw new Exception;
         $chunks = array_reverse($this->readChunks($path));
@@ -41,22 +40,23 @@ class PNGDecoder
             list(, $body) = array_pop($chunks);
             $bin .= $body;
         }
-        
+
         $data = @gzuncompress($bin)
             or raise(new PNGDecodeExcpetion('データ本体の解凍に失敗しました'));
         $bytearr = new ByteArray($data);
-                
-        $image = ref(new PNGDataDecoder)->decode($bytearr, $info);
-                
+
+        $decoder = new PNGDataDecoder;
+        $image = $decoder->decode($bytearr, $info);
+
         return $image;
     }
-    
+
     protected function parseIHDR(Array $chunk)
     {
         list($name, $body) = $chunk;
         $name === 'IHDR' or raise(new PNGDecodeException('IHDRヘッダが無効です'));
         $ret = unpack('Nwidth/Nheight/Cbit/Ccolor/Ccompress/Cfilter/Cinterlace', $body);
-        
+
         in_array($ret['bit'], array(1, 2, 4, 8, 16))
             or raise(new PNGDecodeException('ビット深度が無効です'));
 
@@ -73,27 +73,26 @@ class PNGDecoder
 
         $ret['interlace'] === 0
             or raise(new PNGDecodeExcpetion('インターレースには対応していません'));
-                     
+
         return $ret;
     }
 
     protected function readChunk(&$h)
     {
-        $len = array_val(unpack('N', fread($h, 4)), 1);
-        
+        $len = $this->array_val(unpack('N', fread($h, 4)), 1);
+
         $name = fread($h, 4);
         $body = $len > 0 ? fread($h, $len) : '';
-        $crc = array_val(unpack('N', fread($h, 4)), 1);
+        $crc = $this->array_val(unpack('N', fread($h, 4)), 1);
 
         $crc === crc32($name . $body)
             or raise(new PNGDecodeExcpetion('crc32が適切ではありません'));
-        
+
         return array($name, $body);
     }
+
+    public function array_val($v, $key, $default = null)
+    {
+        return isset($v[$key]) ? $v[$key] : $default;
+    }
 }
-
-
-
-
-
-
