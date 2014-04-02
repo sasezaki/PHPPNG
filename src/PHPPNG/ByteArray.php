@@ -54,7 +54,7 @@ class ByteArray implements ArrayAccess, IteratorAggregate, Countable
     }
     public function writeShort($short)
     {
-        $this->writeBYtes($short, 2);
+        $this->writeBytes($short, 2);
     }
 
     public function offsetGet($i)
