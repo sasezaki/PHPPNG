@@ -34,7 +34,7 @@ class PNGDecoder
             else                  array_pop($chunks);
         }
         $info['color'] !== 3 or isset($plte)
-            or raise(new PNGDecodeException('PLTEチャンクが適切な位置にありません'));
+            or self::raise(new PNGDecodeException('PLTEチャンクが適切な位置にありません'));
 
         // IDATチャンクの連続を連結して得る
         $bin = '';
@@ -44,7 +44,7 @@ class PNGDecoder
         }
 
         $data = @gzuncompress($bin)
-            or raise(new PNGDecodeExcpetion('データ本体の解凍に失敗しました'));
+            or self::raise(new PNGDecodeExcpetion('データ本体の解凍に失敗しました'));
         $bytearr = new ByteArray($data);
 
         $decoder = new PNGDataDecoder;
@@ -56,25 +56,25 @@ class PNGDecoder
     protected function parseIHDR(Array $chunk)
     {
         list($name, $body) = $chunk;
-        $name === 'IHDR' or raise(new PNGDecodeException('IHDRヘッダが無効です'));
+        $name === 'IHDR' or self::raise(new PNGDecodeException('IHDRヘッダが無効です'));
         $ret = unpack('Nwidth/Nheight/Cbit/Ccolor/Ccompress/Cfilter/Cinterlace', $body);
 
         in_array($ret['bit'], array(1, 2, 4, 8, 16))
-            or raise(new PNGDecodeException('ビット深度が無効です'));
+            or self::raise(new PNGDecodeException('ビット深度が無効です'));
 
         in_array($ret['color'], array(2, 4, 6)) and in_array($ret['bit'], array(8, 16))
             or $ret['color'] === 0 and in_array($ret['bit'], array(1, 2, 4, 8, 16))
             or $ret['color'] === 3 and in_array($ret['bit'], array(1, 2, 4, 8))
-            or raise(new PNGDecodeException('カラータイプとビット深度の組み合わせが無効です'));
+            or self::raise(new PNGDecodeException('カラータイプとビット深度の組み合わせが無効です'));
 
         $ret['compress'] === 0
-            or raise(new PNGDecodeExcpetion('未知の圧縮方式です'));
+            or self::raise(new PNGDecodeExcpetion('未知の圧縮方式です'));
 
         $ret['filter'] === 0
-            or raise(new PNGDecodeExcpetion('未知のフィルタリング方式です'));
+            or self::raise(new PNGDecodeExcpetion('未知のフィルタリング方式です'));
 
         $ret['interlace'] === 0
-            or raise(new PNGDecodeExcpetion('インターレースには対応していません'));
+            or self::raise(new PNGDecodeExcpetion('インターレースには対応していません'));
 
         return $ret;
     }
@@ -88,7 +88,7 @@ class PNGDecoder
         $crc = $this->array_val(unpack('N', fread($h, 4)), 1);
 
         $crc === crc32($name . $body)
-            or raise(new PNGDecodeExcpetion('crc32が適切ではありません'));
+            or self::raise(new PNGDecodeExcpetion('crc32が適切ではありません'));
 
         return array($name, $body);
     }
@@ -96,5 +96,10 @@ class PNGDecoder
     public function array_val($v, $key, $default = null)
     {
         return isset($v[$key]) ? $v[$key] : $default;
+    }
+
+    private static function raise(\Exception $e)
+    {
+        throw $e;
     }
 }
